@@ -1,59 +1,55 @@
-# Mattress Mayhem (Phaser 3)
+# Mr. Napper's Mattress Mayhem
 
-A small 2D browser action game built with **Phaser 3** using only placeholder graphics.
+A static **Phaser 3** side-scroller vertical slice designed for **GitHub Pages**.
+No npm, no bundler, no build step.
 
 ## Run
 
-Open `index.html` via **GitHub Pages** (or any static file host/server).
-
-The game script is loaded from `game.js` at the project root to keep GitHub Pages paths simple.
-
-## Gameplay
-
-### Start screen
-- Click **Play** to begin.
-
-### Level 1: Mattress Store
-- Enemies: bed bugs.
-- Goal: survive and reach the **exit on the right side** of the store.
-
-### Level 2: Parking Lot Boss
-- Boss: fuel-line thief with a larger health pool.
-- Two attack patterns:
-  - High-speed **dash** toward the player.
-  - **Shockwave ring** projectiles fired outward.
+Deploy this repository to GitHub Pages and open the Pages URL.
+Everything is plain static files loaded from `index.html`.
 
 ## Controls
-- **Move:** `W A S D` or arrow keys
-- **Attack:** `Space`
 
-## UI
-- Player HP is shown in all gameplay scenes.
-- Boss HP bar is shown during the boss level.
+- Move: `A/D` or `←/→`
+- Jump: `W` or `↑`
+- Attack / throw pillow in boss phase 1: `Space`
+- Ground pound: hold `S` or `↓` in air + press `Space`
+- Bug spray shot: `J` (after Stage 1-1 pickup)
+- Shoo action (kids/bums): `E`
+- Summon dog companion: `Q` (small reputation penalty)
+- Dog bark stun (cooldown): `R`
+- Sleep heal: `H` (HP up, reputation down)
+- Shoes-off heal: `T` (HP up, reputation down)
 
+## Vertical slice flow
 
-## Troubleshooting
-- If you previously tested an older version and see module/import errors, do a hard refresh so the latest `game.js` is loaded.
+1. Opening cutscene
+2. Stage 1-1 Bed Bugs (mattress trampolines + hidden spray pickup)
+3. Random minigame (Sales or Delivery)
+4. Stage 1-2 Unattended Children (chaos meter)
+5. Random minigame
+6. Stage 1-3 Bums in Blizzard (sleep penalties + blanket donation)
+7. Random minigame
+8. Stage 1-4 Mixed Chaos
+9. Final cutscene
+10. Final boss (fuel-line thief):
+   - Phase 1: pillow stuns before fuel drains out
+   - Phase 2: crowbar/rock fight with boss HP
 
+## Systems included
 
-## GitHub Pages setup (step-by-step)
-1. Push this branch to GitHub.
-2. In your repo on GitHub, go to **Settings → Pages**.
-3. Under **Build and deployment**, set **Source** to **Deploy from a branch**.
-4. Set **Branch** to **main** (or the branch you merged this into) and folder to **/(root)**.
-5. Click **Save**.
-6. Wait 1–3 minutes, then open the Pages URL shown on that screen.
+- Tight platformer controls with **coyote time** + **jump buffer**
+- Stomp and ground pound attacks
+- Ranged bug spray unlock + ammo
+- Store dog companion with bark stun cooldown
+- HP, money, reputation persistence across stages/minigames
+- End-of-stage summary with penalties
+- Win/Lose screens
 
-## If you still see the `phaser.esm.js` / `export default` error
-That means your browser is still using an old cached JS file from before this fix.
+## File structure
 
-Do this exactly:
-1. Open your game URL.
-2. Press **Ctrl+Shift+R** (Windows/Linux) or **Cmd+Shift+R** (Mac) for a hard refresh.
-3. If it still fails, open DevTools (**F12**) → right-click refresh button → **Empty Cache and Hard Reload**.
-4. As a final fallback, open the site in a private/incognito window.
-
-### Quick verification in DevTools
-- Open DevTools → Network tab → reload.
-- Confirm you see `game.js?v=20260212b` (status 200).
-- Confirm you do **not** see `phaser.esm.js` requested by your own game script.
+- `src/core`: config, utils, shared state
+- `src/data`: stage/cutscene data
+- `src/entities`: player, dog, enemy factories
+- `src/ui`: HUD
+- `src/scenes`: boot/menu/cutscene/levels/minigame/summary/boss/end
