@@ -11,7 +11,7 @@ MM.BossScene = class extends Phaser.Scene {
     this.boss = MM.spawnEnemy(this, 'thief', 860, 500);
     this.physics.add.collider(this.boss, this.floor);
 
-    this.keys = this.input.keyboard.addKeys('A,D,W,LEFT,RIGHT,UP,S,DOWN,SPACE,J');
+    this.keys = this.input.keyboard.addKeys('A,D,LEFT,RIGHT,S,DOWN,SPACE,J,K');
     this.pillows = [];
     this.sprays = [];
     this.phase = 1;
@@ -21,6 +21,7 @@ MM.BossScene = class extends Phaser.Scene {
     this.bossHp = 40;
 
     this.hud = this.add.text(16, 14, '', { color:'#fff', fontSize:'22px' });
+    this.help = this.add.text(16, 42, 'Controls: A/D move, SPACE jump, K pillow/action, J spray, S+K ground pound', { color:'#ddd', fontSize:'16px' });
     this.bossBarBg = this.add.rectangle(700, 20, 360, 14, 0x000).setOrigin(0, 0);
     this.bossBar = this.add.rectangle(700, 20, 360, 14, 0xff6d46).setOrigin(0, 0);
   }
@@ -45,14 +46,12 @@ MM.BossScene = class extends Phaser.Scene {
       left: this.keys.A.isDown || this.keys.LEFT.isDown,
       right: this.keys.D.isDown || this.keys.RIGHT.isDown,
       down: this.keys.S.isDown || this.keys.DOWN.isDown,
-      jumpPressed: Phaser.Input.Keyboard.JustDown(this.keys.W) || Phaser.Input.Keyboard.JustDown(this.keys.UP),
-      attackPressed: Phaser.Input.Keyboard.JustDown(this.keys.SPACE)
+      jumpPressed: Phaser.Input.Keyboard.JustDown(this.keys.SPACE),
+      attackPressed: Phaser.Input.Keyboard.JustDown(this.keys.K)
     };
     this.player.update(dt, controls);
 
-    if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE)) {
-      if (this.phase === 1) this.spawnPillow();
-    }
+    if (Phaser.Input.Keyboard.JustDown(this.keys.K) && this.phase === 1) this.spawnPillow();
     if (Phaser.Input.Keyboard.JustDown(this.keys.J)) this.spray();
 
     if (this.phase === 1) {
@@ -92,7 +91,6 @@ MM.BossScene = class extends Phaser.Scene {
     moveShot(this.pillows, () => {
       if (this.phase === 1) {
         this.stuns += 1;
-        this.boss.stun = 0.6;
         if (this.stuns >= this.stunsNeeded) this.phase = 2;
       }
     });

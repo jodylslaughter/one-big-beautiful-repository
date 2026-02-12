@@ -8,12 +8,12 @@ No npm, no bundler, no build step.
 Deploy this repository to GitHub Pages and open the Pages URL.
 Everything is plain static files loaded from `index.html`.
 
-## Controls
+## Controls (shown in-game on each screen)
 
 - Move: `A/D` or `←/→`
-- Jump: `W` or `↑`
-- Attack / throw pillow in boss phase 1: `Space`
-- Ground pound: hold `S` or `↓` in air + press `Space`
+- Jump: `Space`
+- Action / stomp assist / pillow throw: `K`
+- Ground pound: hold `S` or `↓` in air + press `K`
 - Bug spray shot: `J` (after Stage 1-1 pickup)
 - Shoo action (kids/bums): `E`
 - Summon dog companion: `Q` (small reputation penalty)

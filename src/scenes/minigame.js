@@ -11,7 +11,8 @@ MM.MinigameScene = class extends Phaser.Scene {
     this.turn = 1;
     this.success = 0;
     this.add.text(560, 100, 'Minigame: Sales Floor', { color:'#fff', fontSize:'40px' }).setOrigin(0.5);
-    this.prompt = this.add.text(560, 210, '', { color:'#ddd', fontSize:'24px', align:'center', wordWrap:{ width:980 }}).setOrigin(0.5);
+    this.add.text(560, 145, 'Controls: Click an option. Close in 3 turns.', { color:'#ddd', fontSize:'18px' }).setOrigin(0.5);
+    this.prompt = this.add.text(560, 220, '', { color:'#ddd', fontSize:'24px', align:'center', wordWrap:{ width:980 }}).setOrigin(0.5);
     this.opts = [
       this.add.text(240, 360, '1) Empathy + Budget Plan', { color:'#9ad', fontSize:'26px' }).setInteractive(),
       this.add.text(240, 410, '2) Hard close + urgency', { color:'#9ad', fontSize:'26px' }).setInteractive(),
@@ -41,14 +42,23 @@ MM.MinigameScene = class extends Phaser.Scene {
 
   createDelivery() {
     this.add.text(560, 90, 'Minigame: Delivery Run', { color:'#fff', fontSize:'40px' }).setOrigin(0.5);
-    this.add.text(560, 130, 'Carry mattresses to target doors (E to drop).', { color:'#ddd', fontSize:'22px' }).setOrigin(0.5);
-    this.player = this.add.rectangle(120, 500, 34, 48, 0x4ea5ff); this.physics.add.existing(this.player);
+    this.add.text(560, 130, 'Controls: A/D or ←/→ move • E drop mattress at door', { color:'#ddd', fontSize:'22px' }).setOrigin(0.5);
+    this.player = this.add.rectangle(120, 500, 34, 48, 0x4ea5ff);
+    this.physics.add.existing(this.player);
+    this.player.body.setCollideWorldBounds(true);
+
+    this.floor = this.add.rectangle(560, 612, 1120, 36, 0x555);
+    this.physics.add.existing(this.floor, true);
+    this.physics.add.collider(this.player, this.floor);
+
     this.targetLabels = ['2B','3A','1C'];
     this.target = MM.Utils.pick(this.targetLabels);
     this.timer = 22; this.score = 0; this.carrying = true;
+
     this.doors = this.targetLabels.map((t,i) => ({ label:t, x:740 + i*110, y:500 }));
     this.doors.forEach((d) => this.add.rectangle(d.x, d.y, 70, 110, 0x777).setStrokeStyle(2, 0xddd));
-    this.doorText = this.doors.map((d) => this.add.text(d.x, d.y-12, d.label, { color:'#fff', fontSize:'24px' }).setOrigin(0.5));
+    this.doors.forEach((d) => this.add.text(d.x, d.y-12, d.label, { color:'#fff', fontSize:'24px' }).setOrigin(0.5));
+
     this.carry = this.add.rectangle(this.player.x, this.player.y-50, 58, 26, 0xc1d5ef);
     this.status = this.add.text(20, 20, '', { color:'#fff', fontSize:'24px' });
     this.keys = this.input.keyboard.addKeys('A,D,LEFT,RIGHT,E');
@@ -58,9 +68,10 @@ MM.MinigameScene = class extends Phaser.Scene {
     if (this.mode !== 'delivery') return;
     const dt = dms / 1000;
     this.timer -= dt;
+
     const dir = (this.keys.A.isDown || this.keys.LEFT.isDown ? -1 : 0) + (this.keys.D.isDown || this.keys.RIGHT.isDown ? 1 : 0);
     this.player.body.setVelocityX(dir * 250);
-    this.player.x = MM.Utils.clamp(this.player.x, 20, MM.C.WIDTH - 20);
+
     if (this.carrying) this.carry.setPosition(this.player.x, this.player.y - 52);
 
     if (Phaser.Input.Keyboard.JustDown(this.keys.E) && this.carrying) {

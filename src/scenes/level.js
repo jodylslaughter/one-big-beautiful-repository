@@ -32,8 +32,9 @@ MM.LevelScene = class extends Phaser.Scene {
 
     this.hud = new MM.HUD(this);
     this.objective = this.add.text(16, 78, `${cfg.key}: ${cfg.objective}`, { color:'#fff', fontSize:'18px' }).setScrollFactor(0).setDepth(100);
+    this.controlsHint = this.add.text(16, 102, 'Controls: A/D move, SPACE jump, K action, J spray, E shoo, Q dog, R bark', { color:'#dfdfdf', fontSize:'16px' }).setScrollFactor(0).setDepth(100);
 
-    this.keys = this.input.keyboard.addKeys('A,D,W,S,LEFT,RIGHT,UP,DOWN,SPACE,J,E,Q,R,H,T');
+    this.keys = this.input.keyboard.addKeys('A,D,S,LEFT,RIGHT,DOWN,SPACE,J,E,Q,R,H,T,K');
   }
 
   createLayout() {
@@ -51,7 +52,15 @@ MM.LevelScene = class extends Phaser.Scene {
   }
 
   spawnStageEnemies() {
-    const spawn = (type, n) => { for (let i = 0; i < n; i++) this.enemies.push(MM.spawnEnemy(this, type, 500 + i * 280, 380)); };
+    const spawn = (type, n) => {
+      for (let i = 0; i < n; i++) {
+        const e = MM.spawnEnemy(this, type, 460 + i * 250 + Phaser.Math.Between(-70, 90), 370);
+        e.wanderTarget = e.x + Phaser.Math.Between(-160, 160);
+        e.jumpCooldown = Phaser.Math.FloatBetween(0.2, 1.2);
+        this.enemies.push(e);
+      }
+    };
+
     if (this.cfg.type === 'bugs') spawn('bug', 7);
     if (this.cfg.type === 'kids') spawn('child', 7);
     if (this.cfg.type === 'bums') spawn('bum', 6);
@@ -78,7 +87,7 @@ MM.LevelScene = class extends Phaser.Scene {
     this.add.circle(x, y + 10, 70, 0xffdd66, 0.2);
     this.enemies.forEach((e) => {
       if (!e.active) return;
-      if (Phaser.Math.Distance.Between(x, y, e.x, e.y) < 85) this.hitEnemy(e, 2);
+      if (Phaser.Math.Distance.Between(x, y, e.x, e.y) < 90) this.hitEnemy(e, 2);
     });
   }
 
@@ -105,20 +114,55 @@ MM.LevelScene = class extends Phaser.Scene {
   }
 
   tryStageComplete() {
-    if (this.kills < this.requiredKills) return false;
-    if (Phaser.Math.Distance.Between(this.player.body.x, this.player.body.y, this.exitDoor.x, this.exitDoor.y) < 90) return true;
-    return false;
+    return this.kills >= this.requiredKills && Phaser.Math.Distance.Between(this.player.body.x, this.player.body.y, this.exitDoor.x, this.exitDoor.y) < 90;
+  }
+
+  updateEnemyAI(e, dt) {
+    if (!e.active || !e.body) return;
+    if (e.stun > 0) { e.stun -= dt; e.body.setVelocityX(0); return; }
+
+    e.jumpCooldown -= dt;
+    if (Math.abs(e.x - e.wanderTarget) < 40 || Math.random() < 0.005) {
+      e.wanderTarget = e.x + Phaser.Math.Between(-240, 240);
+      e.wanderTarget = MM.Utils.clamp(e.wanderTarget, 100, 3050);
+    }
+
+    let dir;
+    if (e.type === 'bug' || e.type === 'child') {
+      dir = Math.sign((Math.random() < 0.55 ? this.player.body.x : e.wanderTarget) - e.x);
+    } else {
+      dir = Math.sign(this.player.body.x - e.x);
+    }
+
+    const speed = e.type === 'child' ? Phaser.Math.Between(130, 190) : e.type === 'bug' ? Phaser.Math.Between(80, 125) : 72;
+    e.body.setVelocityX(dir * speed);
+
+    const onGround = e.body.blocked.down || e.body.touching.down;
+    const nearMattress = this.mattresses.some((m) => Math.abs(e.x - m.x) < 90 && e.y > m.y - 65);
+    if (onGround && e.jumpCooldown <= 0 && (nearMattress || Math.random() < 0.02)) {
+      e.body.setVelocityY(-(e.type === 'child' ? 520 : 430));
+      e.jumpCooldown = Phaser.Math.FloatBetween(0.5, 1.5);
+      if (e.type === 'child') this.chaosMeter += 4;
+    }
+
+    if (e.type === 'bum') {
+      if (Math.abs(e.body.velocity.x) < 12) {
+        e.sleepTimer += dt;
+        if (e.sleepTimer > 3) { this.addPenalty('Bum fell asleep on mattress', -5, 0); e.sleepTimer = 0; }
+      } else e.sleepTimer = 0;
+    }
   }
 
   update(_time, deltaMs) {
     const dt = deltaMs / 1000;
     this.stageTime -= dt;
+
     const controls = {
       left: this.keys.A.isDown || this.keys.LEFT.isDown,
       right: this.keys.D.isDown || this.keys.RIGHT.isDown,
       down: this.keys.S.isDown || this.keys.DOWN.isDown,
-      jumpPressed: Phaser.Input.Keyboard.JustDown(this.keys.W) || Phaser.Input.Keyboard.JustDown(this.keys.UP),
-      attackPressed: Phaser.Input.Keyboard.JustDown(this.keys.SPACE)
+      jumpPressed: Phaser.Input.Keyboard.JustDown(this.keys.SPACE),
+      attackPressed: Phaser.Input.Keyboard.JustDown(this.keys.K)
     };
     this.player.update(dt, controls);
     this.dog.update(dt);
@@ -130,19 +174,7 @@ MM.LevelScene = class extends Phaser.Scene {
     if (Phaser.Input.Keyboard.JustDown(this.keys.T)) this.player.heal(1, 1, 'Shoes off in store');
 
     this.enemies.forEach((e) => {
-      if (!e.active || !e.body) return;
-      if (e.stun > 0) { e.stun -= dt; e.body.setVelocityX(0); return; }
-      const dir = Math.sign(this.player.body.x - e.x);
-      const speed = e.type === 'child' ? 155 : e.type === 'bug' ? 95 : 72;
-      e.body.setVelocityX(dir * speed);
-      if (e.type === 'child' && Math.random() < 0.004) {
-        e.body.setVelocityY(-470);
-        this.chaosMeter += 3;
-      }
-      if (e.type === 'bum' && Math.abs(e.body.velocity.x) < 10) {
-        e.sleepTimer += dt;
-        if (e.sleepTimer > 3) { this.addPenalty('Bum fell asleep on mattress', -5, 0); e.sleepTimer = 0; }
-      }
+      this.updateEnemyAI(e, dt);
 
       const onTop = this.player.body.body.velocity.y > 40 && this.player.body.y < e.y - 14 && Math.abs(this.player.body.x - e.x) < 24;
       if (onTop) {
@@ -152,12 +184,12 @@ MM.LevelScene = class extends Phaser.Scene {
       }
 
       if (MM.Utils.overlap(this.player.body, e, 34)) {
-        if (Phaser.Input.Keyboard.JustDown(this.keys.E)) {
+        if (Phaser.Input.Keyboard.JustDown(this.keys.E) || Phaser.Input.Keyboard.JustDown(this.keys.K)) {
           this.hitEnemy(e, 3);
           if (e.type === 'child') this.chaosMeter = Math.max(0, this.chaosMeter - 14);
         } else {
           this.player.damage(1);
-          if (e.type === 'bum' && Math.abs(this.player.body.x - e.x) < 30) this.addPenalty('Customer saw bum assault', -4, 0);
+          if (e.type === 'bum') this.addPenalty('Customer saw bum assault', -4, 0);
         }
       }
     });
@@ -170,25 +202,19 @@ MM.LevelScene = class extends Phaser.Scene {
       return true;
     });
 
-    if (this.physics.overlap(this.player.body, this.sprayPickup) && this.sprayPickup.active) {
+    if (this.sprayPickup.active && this.physics.overlap(this.player.body, this.sprayPickup)) {
       this.sprayPickup.destroy();
       MM.State.sprayUnlocked = true;
       MM.State.sprayAmmo += 16;
       this.add.text(this.player.body.x, this.player.body.y - 60, 'Bug Spray Unlocked!', { color:'#9af7a8', fontSize:'18px' });
     }
 
-    if (this.physics.overlap(this.player.body, this.blanketPickup) && this.blanketPickup.active && MM.State.money >= 15) {
+    if (this.blanketPickup.active && this.physics.overlap(this.player.body, this.blanketPickup) && MM.State.money >= 15) {
       this.blanketPickup.destroy();
       MM.State.money -= 15;
       this.enemies.forEach((e) => { if (e.active && e.type === 'bum') this.hitEnemy(e, 999); });
       this.add.text(this.player.body.x, this.player.body.y - 60, 'Blanket Donation done', { color:'#ddd', fontSize:'18px' });
     }
-
-    this.mattresses.forEach((m) => {
-      if (this.player.body.body.touching.down && this.player.body.y < m.y - 8 && Math.abs(this.player.body.x - m.x) < 70) {
-        this.player.body.body.setVelocityY(-680);
-      }
-    });
 
     if (this.chaosMeter >= 100) {
       this.chaosMeter = 0;
@@ -200,6 +226,7 @@ MM.LevelScene = class extends Phaser.Scene {
     if (MM.State.hp <= 0 || this.stageTime <= 0) {
       MM.State.stageResult = { title: this.cfg.key, result:'Failed shift', money:this.result.money, rep:this.result.rep, penalties:this.result.penalties };
       this.scene.start('Summary', { next:'Lose' });
+      return;
     }
 
     if (this.tryStageComplete()) {

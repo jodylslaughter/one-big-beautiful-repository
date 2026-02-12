@@ -14,6 +14,7 @@ MM.CutsceneScene = class extends Phaser.Scene {
       else if (this.mode === 'opening') this.scene.start('Level', { stageId: MM.C.STAGES[0] });
       else this.scene.start('Boss');
     });
-    this.add.text(560, 560, 'Click to continue', { color:'#a7a7a7', fontSize:'20px' }).setOrigin(0.5);
+    this.add.text(560, 545, 'Click to continue', { color:'#a7a7a7', fontSize:'20px' }).setOrigin(0.5);
+    this.add.text(560, 580, 'Controls reminder: A/D move • SPACE jump • K action • J spray', { color:'#8f8f8f', fontSize:'16px' }).setOrigin(0.5);
   }
 };
