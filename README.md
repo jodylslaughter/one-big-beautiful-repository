@@ -1,12 +1,14 @@
-# Mattress Mayhem (Phaser 3)
+# Mattress Mayhem (Phaser 3 + Vite)
 
-A small 2D browser action game built with **Phaser 3** using only placeholder graphics.
+A small 2D browser action game built with **Phaser 3** and **Vite** using only placeholder graphics.
 
-## Run
+## Run locally
 
-Open `index.html` via **GitHub Pages** (or any static file host/server).
+```bash
+npm install && npm run dev
+```
 
-The game script is loaded from `main.js` at the project root to keep GitHub Pages paths simple.
+Then open the local URL printed by Vite (usually `http://localhost:5173`).
 
 ## Gameplay
 
@@ -30,7 +32,3 @@ The game script is loaded from `main.js` at the project root to keep GitHub Page
 ## UI
 - Player HP is shown in all gameplay scenes.
 - Boss HP bar is shown during the boss level.
-
-
-## Troubleshooting
-- If you previously tested an older version and see module/import errors, do a hard refresh so the latest `main.js` is loaded.
