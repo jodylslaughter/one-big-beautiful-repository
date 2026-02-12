@@ -3,15 +3,19 @@ MM.SummaryScene = class extends Phaser.Scene {
   constructor() { super('Summary'); }
   init(data) { this.next = data.next; this.mode = data.mode; }
   create() {
-    const r = MM.State.stageResult || { title:'Summary', result:'', money:0, rep:0, penalties:[] };
+    const r = MM.State.stageResult || { title:'Summary', result:'', money:0, rep:0, penalties:[], maxCombo: MM.State.maxCombo };
     this.cameras.main.setBackgroundColor('#1e1e1e');
-    this.add.text(560, 90, 'Shift Summary', { color:'#fff', fontSize:'46px' }).setOrigin(0.5);
-    this.add.text(560, 160, `${r.title} • ${r.result}`, { color:'#d9ecff', fontSize:'28px' }).setOrigin(0.5);
-    this.add.text(560, 230, `Money Δ: ${r.money}   Reputation Δ: ${r.rep}`, { color:'#d2ffd2', fontSize:'24px' }).setOrigin(0.5);
+    this.add.text(560, 80, 'Shift Summary', { color:'#fff', fontSize:'46px' }).setOrigin(0.5);
+    this.add.text(560, 136, `${r.title} • ${r.result}`, { color:'#d9ecff', fontSize:'28px' }).setOrigin(0.5);
+    this.add.text(560, 188, `Money Δ: ${r.money}   Reputation Δ: ${r.rep || 0}`, { color:'#d2ffd2', fontSize:'24px' }).setOrigin(0.5);
+    this.add.text(560, 228, `Best Combo: ${r.maxCombo || MM.State.maxCombo}   Difficulty: x${MM.State.difficulty.toFixed(2)}`, { color:'#ffe6a5', fontSize:'20px' }).setOrigin(0.5);
+
     const list = r.penalties.length ? r.penalties.slice(-5).join('\n') : 'No notable penalties.';
-    this.add.text(560, 340, list, { color:'#ffcbcb', fontSize:'20px', align:'center', wordWrap:{ width:900 } }).setOrigin(0.5);
-    this.add.text(560, 500, `Totals:  HP ${MM.State.hp}/${MM.C.MAX_HP}   $${MM.State.money}   Rep ${MM.State.rep}`, { color:'#fff', fontSize:'24px' }).setOrigin(0.5);
-    this.add.text(560, 570, 'Click to continue', { color:'#aaa', fontSize:'22px' }).setOrigin(0.5);
+    this.add.text(560, 330, list, { color:'#ffcbcb', fontSize:'20px', align:'center', wordWrap:{ width:900 } }).setOrigin(0.5);
+
+    this.add.text(560, 490, `Totals: HP ${MM.State.hp}/${MM.C.MAX_HP}   $${Math.floor(MM.State.money)}   Rep ${Math.floor(MM.State.rep)}`, { color:'#fff', fontSize:'24px' }).setOrigin(0.5);
+    this.add.text(560, 524, `Modifier: ${MM.State.runModifier.name} — ${MM.State.runModifier.desc}`, { color:'#c6d9ff', fontSize:'16px' }).setOrigin(0.5);
+    this.add.text(560, 572, 'Click to continue', { color:'#aaa', fontSize:'22px' }).setOrigin(0.5);
     this.input.once('pointerdown', () => this.goNext());
   }
 

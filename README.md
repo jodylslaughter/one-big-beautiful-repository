@@ -21,6 +21,18 @@ Everything is plain static files loaded from `index.html`.
 - Sleep heal: `H` (HP up, reputation down)
 - Shoes-off heal: `T` (HP up, reputation down)
 
+## Replayability / fun tuning
+
+- Random **shift modifier** each run (economy, chaos, enemy pressure)
+- Dynamic reinforcement waves during stages
+- Enemy personalities (`aggressive`, `erratic`, `coward`) and varied movement
+- Combo + multiplier scoring (higher money on streaks)
+- Random ammo/health drops from defeated enemies
+- Minigame depth:
+  - Sales: customer profile + dynamic objections
+  - Delivery: streak rewards + timer pressure
+- Persistent difficulty scaling through the run
+
 ## Vertical slice flow
 
 1. Opening cutscene
@@ -53,7 +65,6 @@ Everything is plain static files loaded from `index.html`.
 - `src/entities`: player, dog, enemy factories
 - `src/ui`: HUD
 - `src/scenes`: boot/menu/cutscene/levels/minigame/summary/boss/end
-
 
 ## Texture atlas support (optional)
 
