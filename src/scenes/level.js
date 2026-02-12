@@ -27,7 +27,9 @@ MM.LevelScene = class extends Phaser.Scene {
 
     this.spawnStageEnemies();
     this.createPickups();
-    this.exitDoor = this.add.rectangle(3070, 470, 40, 90, 0x84ffb8);
+    this.exitDoor = MM.Utils.makeSpriteOrRect(this, {
+      x: 3070, y: 470, atlasKey: 'props', frame: 'exit_door_01', width: 40, height: 90, color: 0x84ffb8
+    });
     this.physics.add.existing(this.exitDoor, true);
 
     this.hud = new MM.HUD(this);
@@ -35,15 +37,22 @@ MM.LevelScene = class extends Phaser.Scene {
     this.controlsHint = this.add.text(16, 102, 'Controls: A/D move, SPACE jump, K action, J spray, E shoo, Q dog, R bark', { color:'#dfdfdf', fontSize:'16px' }).setScrollFactor(0).setDepth(100);
 
     this.keys = this.input.keyboard.addKeys('A,D,S,LEFT,RIGHT,DOWN,SPACE,J,E,Q,R,H,T,K');
+    this.trampolineCooldown = 0;
+    this.wasPlayerGrounded = false;
   }
 
   createLayout() {
-    const base = this.add.rectangle(1600, 610, 3200, 40, 0x606060);
+    const base = MM.Utils.makeSpriteOrRect(this, {
+      x: 1600, y: 610, atlasKey: 'props', frame: 'floor_01', width: 3200, height: 40, color: 0x606060
+    });
     this.physics.add.existing(base, true); this.platforms.add(base);
     for (let i = 0; i < 12; i++) {
       const x = 250 + i * 240;
       const y = 500 - (i % 3) * 95;
-      const bed = this.add.rectangle(x, y, 130, 24, 0xc1d5ef).setStrokeStyle(2, 0xffffff);
+      const bed = MM.Utils.makeSpriteOrRect(this, {
+        x, y, atlasKey: 'props', frame: 'mattress_01', width: 130, height: 24, color: 0xc1d5ef
+      });
+      if (bed.setStrokeStyle) bed.setStrokeStyle(2, 0xffffff);
       this.physics.add.existing(bed, true);
       bed.isMattress = true;
       this.platforms.add(bed);
@@ -69,9 +78,13 @@ MM.LevelScene = class extends Phaser.Scene {
   }
 
   createPickups() {
-    this.sprayPickup = this.add.rectangle(1240, 290, 26, 26, 0x9af7a8);
+    this.sprayPickup = MM.Utils.makeSpriteOrRect(this, {
+      x: 1240, y: 290, atlasKey: 'props', frame: 'spray_pickup_01', width: 26, height: 26, color: 0x9af7a8
+    });
     this.physics.add.existing(this.sprayPickup, true);
-    this.blanketPickup = this.add.rectangle(2240, 290, 26, 26, 0xb8b0ff);
+    this.blanketPickup = MM.Utils.makeSpriteOrRect(this, {
+      x: 2240, y: 290, atlasKey: 'props', frame: 'blanket_pickup_01', width: 26, height: 26, color: 0xb8b0ff
+    });
     this.physics.add.existing(this.blanketPickup, true);
   }
 
@@ -215,6 +228,19 @@ MM.LevelScene = class extends Phaser.Scene {
       this.enemies.forEach((e) => { if (e.active && e.type === 'bum') this.hitEnemy(e, 999); });
       this.add.text(this.player.body.x, this.player.body.y - 60, 'Blanket Donation done', { color:'#ddd', fontSize:'18px' });
     }
+
+    this.trampolineCooldown -= dt;
+    const pb = this.player.body.body;
+    const playerOnGround = pb.blocked.down || pb.touching.down;
+    const justLanded = playerOnGround && !this.wasPlayerGrounded;
+    if (this.trampolineCooldown <= 0 && justLanded) {
+      const bounceMattress = this.mattresses.find((m) => Math.abs(this.player.body.x - m.x) < 72 && this.player.body.y < m.y - 6);
+      if (bounceMattress) {
+        pb.setVelocityY(-640);
+        this.trampolineCooldown = 0.22;
+      }
+    }
+    this.wasPlayerGrounded = playerOnGround;
 
     if (this.chaosMeter >= 100) {
       this.chaosMeter = 0;

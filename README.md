@@ -53,3 +53,29 @@ Everything is plain static files loaded from `index.html`.
 - `src/entities`: player, dog, enemy factories
 - `src/ui`: HUD
 - `src/scenes`: boot/menu/cutscene/levels/minigame/summary/boss/end
+
+
+## Texture atlas support (optional)
+
+The game now attempts to load optional atlases from `assets/atlases/`:
+- `shandus.png` + `shandus.json`
+- `boss.png` + `boss.json`
+- `enemies.png` + `enemies.json`
+- `props.png` + `props.json`
+
+If any atlas is missing, the game gracefully falls back to placeholder rectangles/circles.
+A developer status line is shown on the menu and an `[AtlasStatus]` line is logged in the browser console.
+
+### Frame naming conventions
+
+- `shandus_idle_01`
+- `shandus_walk_01..04`
+- `shandus_jump_01`
+- `shandus_pound_01`
+- `bedbug_walk_01..02`
+- `kid_run_01..04`
+- `dog_run_01..04`
+- `dog_bark_01..02`
+- `boss_idle_01..02`
+- `boss_throw_01..03`
+- `boss_crowbar_01..03`

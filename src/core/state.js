@@ -9,6 +9,7 @@ MM.State = {
     this.stageIndex = 0;
     this.stageResult = null;
     this.penalties = [];
+    this.atlases = this.atlases || { shandus: false, boss: false, enemies: false, props: false };
   }
 };
 MM.State.reset();

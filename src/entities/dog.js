@@ -3,7 +3,15 @@ MM.Dog = class {
   constructor(scene, player) {
     this.scene = scene;
     this.player = player;
-    this.sprite = scene.add.rectangle(player.body.x - 50, player.body.y + 8, 24, 20, 0xc79a60);
+    this.sprite = MM.Utils.makeSpriteOrRect(scene, {
+      x: player.body.x - 50,
+      y: player.body.y + 8,
+      atlasKey: 'enemies',
+      frame: 'dog_run_01',
+      width: 24,
+      height: 20,
+      color: 0xc79a60
+    });
     scene.physics.add.existing(this.sprite);
     this.sprite.body.setAllowGravity(false);
     this.nextBark = 0;
@@ -19,6 +27,7 @@ MM.Dog = class {
   bark(time, enemies) {
     if (time < this.nextBark || this.activeTime <= 0) return;
     this.nextBark = time + 4000;
+    if (this.sprite.setFrame && MM.Utils.textureHasFrame(this.scene, 'enemies', 'dog_bark_01')) this.sprite.setFrame('dog_bark_01');
     this.scene.add.text(this.sprite.x, this.sprite.y - 30, 'BARK!', { color:'#fff58a', fontSize:'16px' }).setDepth(40);
     enemies.forEach((e) => {
       if (e.active && MM.Utils.overlap(this.sprite, e, 130)) e.stun = 1.4;
@@ -32,5 +41,6 @@ MM.Dog = class {
     this.sprite.x += (tx - this.sprite.x) * 0.08;
     this.sprite.y += (ty - this.sprite.y) * 0.08;
     this.sprite.setAlpha(this.activeTime > 0 ? 1 : 0.2);
+    if (this.sprite.setFrame && MM.Utils.textureHasFrame(this.scene, 'enemies', 'dog_run_01')) this.sprite.setFrame('dog_run_01');
   }
 };

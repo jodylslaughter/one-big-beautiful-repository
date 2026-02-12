@@ -19,5 +19,8 @@ MM.MenuScene = class extends Phaser.Scene {
     play.on('pointerover', () => play.setFillStyle(0x4fc57d));
     play.on('pointerout', () => play.setFillStyle(0x3ea66b));
     play.on('pointerdown', () => this.scene.start('Cutscene', { mode:'opening' }));
+
+    const atlasStatus = this.registry.get('atlasStatusText') || 'atlas status unavailable';
+    this.add.text(560, 600, `Atlas: ${atlasStatus}`, { color:'#9fd4ff', fontSize:'14px' }).setOrigin(0.5);
   }
 };

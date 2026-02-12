@@ -5,7 +5,8 @@ MM.BossScene = class extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#2d3640');
     this.physics.world.setBounds(0, 0, MM.C.WIDTH, MM.C.HEIGHT);
     this.player = new MM.Player(this, 200, 500);
-    this.floor = this.add.rectangle(560, 612, 1120, 36, 0x666); this.physics.add.existing(this.floor, true);
+    this.floor = MM.Utils.makeSpriteOrRect(this, { x:560, y:612, atlasKey:'props', frame:'floor_01', width:1120, height:36, color:0x666 });
+    this.physics.add.existing(this.floor, true);
     this.physics.add.collider(this.player.body, this.floor);
 
     this.boss = MM.spawnEnemy(this, 'thief', 860, 500);
@@ -51,7 +52,10 @@ MM.BossScene = class extends Phaser.Scene {
     };
     this.player.update(dt, controls);
 
-    if (Phaser.Input.Keyboard.JustDown(this.keys.K) && this.phase === 1) this.spawnPillow();
+    if (Phaser.Input.Keyboard.JustDown(this.keys.K) && this.phase === 1) {
+      if (this.boss.setFrame && MM.Utils.textureHasFrame(this, 'boss', 'boss_throw_01')) this.boss.setFrame('boss_throw_01');
+      this.spawnPillow();
+    }
     if (Phaser.Input.Keyboard.JustDown(this.keys.J)) this.spray();
 
     if (this.phase === 1) {
@@ -60,6 +64,7 @@ MM.BossScene = class extends Phaser.Scene {
     } else {
       const dir = Math.sign(this.player.body.x - this.boss.x);
       this.boss.body.setVelocityX(dir * 160);
+      if (this.boss.setFrame && MM.Utils.textureHasFrame(this, 'boss', 'boss_crowbar_01')) this.boss.setFrame('boss_crowbar_01');
       if (Math.random() < 0.008) {
         const rock = this.add.circle(this.boss.x, this.boss.y - 30, 10, 0x999);
         this.physics.add.existing(rock);
@@ -104,6 +109,7 @@ MM.BossScene = class extends Phaser.Scene {
 
     if (MM.State.hp <= 0) return this.scene.start('Lose');
 
+    if (this.phase === 1 && this.boss.setFrame && MM.Utils.textureHasFrame(this, 'boss', 'boss_idle_01')) this.boss.setFrame('boss_idle_01');
     this.hud.setText(`Boss Phase ${this.phase}  HP:${MM.State.hp}/${MM.C.MAX_HP}  Fuel:${Math.max(0,Math.ceil(this.fuel))}  Stuns:${this.stuns}/${this.stunsNeeded}`);
     this.bossBar.width = 360 * (this.phase === 1 ? this.fuel / 100 : this.bossHp / 40);
   }
