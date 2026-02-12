@@ -1,3 +1,4 @@
+import Phaser from 'https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.esm.js';
 
 const GAME_WIDTH = 960;
 const GAME_HEIGHT = 540;
@@ -95,7 +96,6 @@ class BaseCombatScene extends Phaser.Scene {
       })
       .setDepth(20);
 
-    this.physics.add.collider(this.player, this.enemies, this.onPlayerHitEnemy, undefined, this);
     this.add.collider(this.player, this.enemies, this.onPlayerHitEnemy, undefined, this);
     this.physics.add.overlap(this.playerAttack, this.enemies, this.onAttackHitEnemy, undefined, this);
 
